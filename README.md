@@ -273,12 +273,19 @@ Source Code:
     }
 
 Results:
+
+
  
 Code Structure
+
 •	thread_sort handles sorting using threads. Each thread sorts a portion of the array
+
 •	process_sort handles sorting using processes and pipes for communication
+
 •	thread_max finds the maximum value using threads and a shared integer with a mutex lock
+
 •	process_max finds the maximum using processes and shared memory with synchronization
+
 The reducer is responsible for merging or finalizing results from all the workers.
 
 Performance Testing
