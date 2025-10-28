@@ -288,7 +288,7 @@ This part helped me understand how synchronization and communication between pro
 
 The reducer is responsible for merging or finalizing results from all the workers.
 
-**Performance Testing***
+**Performance Testing**
 
 I tested the code with both small inputs like 32 elements and large ones like 131072 elements. For smaller inputs, the speed difference between 1 and 8 workers wasn’t much, but for larger inputs, more workers significantly reduced execution time.
 The multiprocessing version took a bit longer than multithreading because of process creation overhead and communication. Threads share the same memory space, which made communication faster.
