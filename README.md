@@ -1,22 +1,22 @@
-Project Report: MapReduce Systems for Parallel Sorting and Max-Value Aggregation
+**Project Report: MapReduce Systems for Parallel Sorting and Max-Value Aggregation**
 
-Overview
+**Overview**
 This project was about building two MapReduce-style programs that work on a single machine using C. The first part does parallel sorting, and the second part finds the maximum value from a dataset while using shared memory with limited space. Instead of using a distributed system like Hadoop, we simulate MapReduce using threads and processes to understand 
 parallelism, synchronization, and inter-process communication.
 
-Part 1: Parallel Sorting
+**Part 1: Parallel Sorting**
 In this task, I implemented sorting in two ways using multithreading and multiprocessing.
 For the threading version, I divided the array into chunks and gave each thread a part to sort with qsort. After the threads finished, the reducer merged all the sorted chunks together to get one final sorted array. I used the pthread library for thread creation and joining.
 For the multiprocessing version, I used fork to create separate worker processes. Each process also sorted a chunk of the array, and I used pipes for inter-process communication. Each worker sent its sorted results to the parent process, which acted as the reducer and merged all the results.
 I measured execution times for different numbers of workers like 1, 2, 4, and 8, and compared them to see how parallelization improved performance.
 
-Part 2: Max-Value Aggregation with Shared Memory
+**Part 2: Max-Value Aggregation with Shared Memory**
 The second part was about finding the maximum value in a dataset using shared memory but with a constraint that only one integer could be stored there.
 In the threading version, each thread found the local maximum of its part, and then all threads tried to update the global maximum. I used a mutex lock to make sure that only one thread updates the shared value at a time to avoid race conditions.
 For the multiprocessing version, I used shared memory with mmap to store the global max so that all processes could access it. Each process compared its local maximum with the global one and updated it if necessary.
 This part helped me understand how synchronization and communication between processes are needed when multiple threads or processes try to write to the same shared memory space.
 
-Source Code:
+**Source Code:**
 
     %%writefile mapreduce_project.c
     #include <stdio.h>
@@ -272,11 +272,11 @@ Source Code:
         return 0;
     }
 
-Results:
+**Result:**
 
 
  
-Code Structure
+**Code Structure**
 
 •	thread_sort handles sorting using threads. Each thread sorts a portion of the array
 
@@ -288,12 +288,14 @@ Code Structure
 
 The reducer is responsible for merging or finalizing results from all the workers.
 
-Performance Testing
+**Performance Testing***
+
 I tested the code with both small inputs like 32 elements and large ones like 131072 elements. For smaller inputs, the speed difference between 1 and 8 workers wasn’t much, but for larger inputs, more workers significantly reduced execution time.
 The multiprocessing version took a bit longer than multithreading because of process creation overhead and communication. Threads share the same memory space, which made communication faster.
 When testing the max-value part, I noticed that without synchronization, the shared variable sometimes gave wrong results. After adding the mutex and proper shared memory handling, the program worked correctly every time.
 
-Conclusion
+**Conclusion**
+
 This project helped me understand how MapReduce can be simulated with threads and processes. I learned how to manage threads, use synchronization tools like mutexes, and work with communication methods such as pipes and shared memory.
 Multithreading was usually faster because it had less overhead, while multiprocessing gave better isolation. The biggest challenge was handling synchronization and merging results efficiently. Overall, this project gave me good hands-on experience with parallelism and process management concepts in operating systems.
 
