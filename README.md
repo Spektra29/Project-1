@@ -274,7 +274,7 @@ This part helped me understand how synchronization and communication between pro
 
 **Result:**
 
-
+![res](prj_1.png)
  
 **Code Structure**
 
