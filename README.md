@@ -1,20 +1,31 @@
 **Project Report: MapReduce Systems for Parallel Sorting and Max-Value Aggregation**
 
 **Overview**
-This project was about building two MapReduce-style programs that work on a single machine using C. The first part does parallel sorting, and the second part finds the maximum value from a dataset while using shared memory with limited space. Instead of using a distributed system like Hadoop, we simulate MapReduce using threads and processes to understand 
-parallelism, synchronization, and inter-process communication.
+This project was about using MapReduce-style systems to handle two main tasks: sorting data in parallel and finding the maximum value from a dataset. The idea was to get hands-on experience with parallelism, inter-process communication (IPC), and synchronization in an operating system context. I used both multithreading and multiprocessing to compare how they perform.
 
-**Part 1: Parallel Sorting**
-In this task, I implemented sorting in two ways using multithreading and multiprocessing.
-For the threading version, I divided the array into chunks and gave each thread a part to sort with qsort. After the threads finished, the reducer merged all the sorted chunks together to get one final sorted array. I used the pthread library for thread creation and joining.
-For the multiprocessing version, I used fork to create separate worker processes. Each process also sorted a chunk of the array, and I used pipes for inter-process communication. Each worker sent its sorted results to the parent process, which acted as the reducer and merged all the results.
-I measured execution times for different numbers of workers like 1, 2, 4, and 8, and compared them to see how parallelization improved performance.
+**Project Goals**
+The goal was to understand how data can be processed faster by dividing the work among multiple threads or processes, and how to manage communication between them. It also helped to see how performance changes as the number of workers increases.
 
-**Part 2: Max-Value Aggregation with Shared Memory**
-The second part was about finding the maximum value in a dataset using shared memory but with a constraint that only one integer could be stored there.
-In the threading version, each thread found the local maximum of its part, and then all threads tried to update the global maximum. I used a mutex lock to make sure that only one thread updates the shared value at a time to avoid race conditions.
-For the multiprocessing version, I used shared memory with mmap to store the global max so that all processes could access it. Each process compared its local maximum with the global one and updated it if necessary.
-This part helped me understand how synchronization and communication between processes are needed when multiple threads or processes try to write to the same shared memory space.
+**System Design**
+Parallel Sort – sorts chunks of data using threads or processes, then merges them.
+
+Max-Value Aggregation – divides the dataset into parts, finds local max values, and then finds the global max.
+
+Both versions share a similar structure:
+
+- Split data into smaller chunks
+
+- Assign chunks to threads or processes
+
+- Perform computation
+
+- Merge the results
+
+For multiprocessing, I used shared memory and semaphores to manage data safely. For multithreading, I used mutex locks.
+
+Implementation Summary: The sorting task used merge sort and handled data in blocks. Each thread or process sorted its part independently, then results were merged. For the max-value task, each worker found the max in its section, and then a reducer combined those to get the overall max.
+
+I ran both programs multiple times with different worker counts (1, 2, 4, and 8) to analyze performance. The measurements were done using simple timers around each execution. 
 
 **Source Code:**
 
@@ -272,9 +283,30 @@ This part helped me understand how synchronization and communication between pro
         return 0;
     }
 
-**Result:**
+**Example Output:**
+
+With 1 worker: took around 3.2 seconds
+
+With 4 workers: took about 1.1 seconds
+
+With 8 workers: around 0.8 seconds
 
 ![res](prj_1.png)
+
+**Performance Results**
+As expected, the runtime went down as I added more workers, but not perfectly linearly because of synchronization overhead and memory sharing. Threads usually performed a bit better than processes because they share memory more easily.
+
+**Part 1: Parallel Sorting**
+In this task, I implemented sorting in two ways using multithreading and multiprocessing.
+For the threading version, I divided the array into chunks and gave each thread a part to sort with qsort. After the threads finished, the reducer merged all the sorted chunks together to get one final sorted array. I used the pthread library for thread creation and joining.
+For the multiprocessing version, I used fork to create separate worker processes. Each process also sorted a chunk of the array, and I used pipes for inter-process communication. Each worker sent its sorted results to the parent process, which acted as the reducer and merged all the results.
+I measured execution times for different numbers of workers like 1, 2, 4, and 8, and compared them to see how parallelization improved performance.
+
+**Part 2: Max-Value Aggregation with Shared Memory**
+The second part was about finding the maximum value in a dataset using shared memory but with a constraint that only one integer could be stored there.
+In the threading version, each thread found the local maximum of its part, and then all threads tried to update the global maximum. I used a mutex lock to make sure that only one thread updates the shared value at a time to avoid race conditions.
+For the multiprocessing version, I used shared memory with mmap to store the global max so that all processes could access it. Each process compared its local maximum with the global one and updated it if necessary.
+This part helped me understand how synchronization and communication between processes are needed when multiple threads or processes try to write to the same shared memory space.
  
 **Code Structure**
 
@@ -288,14 +320,10 @@ This part helped me understand how synchronization and communication between pro
 
 The reducer is responsible for merging or finalizing results from all the workers.
 
-**Performance Testing**
-
-I tested the code with both small inputs like 32 elements and large ones like 131072 elements. For smaller inputs, the speed difference between 1 and 8 workers wasn’t much, but for larger inputs, more workers significantly reduced execution time.
-The multiprocessing version took a bit longer than multithreading because of process creation overhead and communication. Threads share the same memory space, which made communication faster.
-When testing the max-value part, I noticed that without synchronization, the shared variable sometimes gave wrong results. After adding the mutex and proper shared memory handling, the program worked correctly every time.
+**Discussion**
+Overall, both approaches worked well, but threads were slightly faster and easier to manage. Processes had better isolation but required more memory and IPC setup. The main challenge was synchronizing shared data and making sure no data race occurred.
 
 **Conclusion**
-
 This project helped me understand how MapReduce can be simulated with threads and processes. I learned how to manage threads, use synchronization tools like mutexes, and work with communication methods such as pipes and shared memory.
 Multithreading was usually faster because it had less overhead, while multiprocessing gave better isolation. The biggest challenge was handling synchronization and merging results efficiently. Overall, this project gave me good hands-on experience with parallelism and process management concepts in operating systems.
 
